@@ -99,48 +99,54 @@ def gather_my_followers(my_account):
 
 
 def gather_users():
+    something_went_wrong = 0
     users_to_save = []
     account_to_inspect = str(get_who_to_spy.get())
     time.sleep(gathering_waiting)
     driver.get("https://www.instagram.com/" + account_to_inspect)
     time.sleep(gathering_waiting)
-    driver.find_element_by_xpath("""//*[@id="react-root"]/section/main/div/header/section/ul/li[2]/a""").click()
-    time.sleep(gathering_waiting)
-    actions = ActionChains(driver)
-    number_of_followers_to_save = int(get_number_of_followers.get())
-    index_of_try = 0
-    while len(users_to_save) < number_of_followers_to_save:
-        if index_of_try < 15:
-            try:
-                scroll_window = driver.find_element_by_class_name("""PZuss""")
-                scroll_window.click()
-                time.sleep(1)
-                actions.send_keys(Keys.SPACE).perform()
-                time.sleep(0.25)
-                actions.send_keys(Keys.SPACE).perform()
-                time.sleep(0.25)
-                actions.send_keys(Keys.SPACE).perform()
-                time.sleep(0.25)
-                actions.send_keys(Keys.SPACE).perform()
-                time.sleep(0.25)
-                actions.send_keys(Keys.SPACE).perform()
+    try:
+        driver.find_element_by_xpath("""//*[@id="react-root"]/section/main/div/header/section/ul/li[2]/a""").click()
+    except:
+        something_went_wrong = 1
+        showinfo("Warning!", "Was uanble to click the right thing")
+    if something_went_wrong == 0:
+        time.sleep(gathering_waiting)
+        actions = ActionChains(driver)
+        number_of_followers_to_save = int(get_number_of_followers.get())
+        index_of_try = 0
+        while len(users_to_save) < number_of_followers_to_save:
+            if index_of_try < 15:
+                try:
+                    scroll_window = driver.find_element_by_class_name("""PZuss""")
+                    scroll_window.click()
+                    time.sleep(1)
+                    actions.send_keys(Keys.SPACE).perform()
+                    time.sleep(0.25)
+                    actions.send_keys(Keys.SPACE).perform()
+                    time.sleep(0.25)
+                    actions.send_keys(Keys.SPACE).perform()
+                    time.sleep(0.25)
+                    actions.send_keys(Keys.SPACE).perform()
+                    time.sleep(0.25)
+                    actions.send_keys(Keys.SPACE).perform()
+                    time.sleep(gathering_waiting)
+                    temp_names = driver.find_elements_by_class_name('FPmhX')
+                    for link in temp_names:
+                        if link.get_attribute('href') not in users_to_save:
+                            users_to_save.append(link.get_attribute('href'))
+                    with open(account_to_inspect + "_followers.txt", "w") as my_gathered_users: 
+                        my_gathered_users.write(str(users_to_save))
+                    index_of_try += 1
+                    print("Loop went " + str(index_of_try) + " times")
+                    print(len(users_to_save))
+                except Exception as e:
+                    print('error scrolling down web element', e)
+                gathered_users_text_variable.set("Users saved: " + str(len(users_to_save)))
+                main_window_of_gui.update_idletasks()
                 time.sleep(gathering_waiting)
-                temp_names = driver.find_elements_by_class_name('FPmhX')
-                for link in temp_names:
-                    if link.get_attribute('href') not in users_to_save:
-                        users_to_save.append(link.get_attribute('href'))
-                with open(account_to_inspect + "_followers.txt", "w") as my_gathered_users: 
-                    my_gathered_users.write(str(users_to_save))
-                index_of_try += 1
-                print("Loop went " + str(index_of_try) + " times")
-                print(len(users_to_save))
-            except Exception as e:
-                print('error scrolling down web element', e)
-            gathered_users_text_variable.set("Users saved: " + str(len(users_to_save)))
-            main_window_of_gui.update_idletasks()
-            time.sleep(gathering_waiting)
-        else:
-            number_of_followers_to_save = 0
+            else:
+                number_of_followers_to_save = 0
 
 def extracting_user_to_like(account_to_inspect):      
     with open(account_to_inspect + "_followers.txt", "r") as file_gathered_users:
