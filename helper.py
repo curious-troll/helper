@@ -1,5 +1,6 @@
 import simplejson
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import time
@@ -25,7 +26,10 @@ browser_waiting = random.randint(5,10)
 gathering_waiting = random.randint(1,3)
 like_waiting = random.randint(45, 90)
 
-driver = webdriver.Chrome()
+
+user_options = Options()
+user_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36")
+driver = webdriver.Chrome(chrome_options=user_options)
 driver.get("https://www.instagram.com/accounts/login/?source=auth_switcher")
 
 if not os.path.isfile('./liked_users.txt'):
