@@ -1,6 +1,8 @@
 import simplejson
+import keyring
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import time
@@ -11,6 +13,7 @@ import tkinter
 from tkinter import Label
 from tkinter import Button
 from tkinter import Entry
+from tkinter import OptionMenu
 from tkinter import StringVar
 from tkinter.messagebox import showinfo
 
@@ -26,10 +29,7 @@ browser_waiting = random.randint(5,10)
 gathering_waiting = random.randint(1,3)
 like_waiting = random.randint(45, 90)
 
-
-user_options = Options()
-user_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36")
-driver = webdriver.Chrome(chrome_options=user_options)
+driver = webdriver.Chrome()
 driver.get("https://www.instagram.com/accounts/login/?source=auth_switcher")
 
 if not os.path.isfile('./liked_users.txt'):
@@ -39,6 +39,10 @@ if not os.path.isfile('./liked_users.txt'):
 if not os.path.isfile('./vip_accounts.txt'):
     with open("vip_accounts.txt", "w") as file_vip_accounts:
         file_vip_accounts.write('["one","two"]')
+
+if not os.path.isfile('./saved_accounts.txt'):
+    with open("saved_accounts.txt", "w") as file_saved_accounts:
+        file_saved_accounts.write('["one","two"]')
 
 
 def gather_i_follow(my_account):
@@ -119,7 +123,7 @@ def gather_users():
         actions = ActionChains(driver)
         number_of_followers_to_save = int(get_number_of_followers.get())
         index_of_try = 0
-        while len(users_to_save) < number_of_followers_to_save:
+        while len(users_to_save) < number_of_followers_to_save and len(users_to_save) < 2000:
             if index_of_try < 15:
                 try:
                     scroll_window = driver.find_element_by_class_name("""PZuss""")
@@ -146,8 +150,6 @@ def gather_users():
                     print(len(users_to_save))
                 except Exception as e:
                     print('error scrolling down web element', e)
-                gathered_users_text_variable.set("Users saved: " + str(len(users_to_save)))
-                main_window_of_gui.update_idletasks()
                 time.sleep(gathering_waiting)
             else:
                 number_of_followers_to_save = 0
@@ -176,8 +178,8 @@ def like_gathered_users():
                 file_liked_users.write(str(liked_users))
             print(user_to_like + "saved and liked")
             likes_given += 1
-        like_text_variable.set("Users liked: " + str(likes_given))
-        main_window_of_gui.update_idletasks()
+            print(likes_given)
+
 
 def liking_user(user_to_like):
     driver.get(user_to_like)
@@ -243,19 +245,76 @@ def follow_user():
             with open("liked_users.txt", "w") as file_liked_users:
                 file_liked_users.write(str(liked_users))
             print(user_to_like + " saved")
-        like_text_variable.set("Users followed: " + str(followed))
-        main_window_of_gui.update_idletasks()
 
+
+def add_account_name_and_password():
+    create_dropdown_list_of_saved_accounts()
+    account_name = save_account_name_variable.get()
+    account_password = save_account_password_variable.get()
+    if account_name != "Enter account name to save" and account_password != "Enter account password to save":
+        keyring.set_password("instagram", account_name, account_password)
+        with open("saved_accounts.txt", "r") as file_saved_acounts:
+            saved_accounts = eval(file_saved_acounts.read())
+        if account_name not in saved_accounts:
+            saved_accounts.append(account_name)
+            with open("saved_accounts.txt", "w") as file_saved_acounts:
+                file_saved_acounts.write(str(saved_accounts))
+                showinfo("done", str(account_name) + " saved to the list")
+        else:
+            showinfo("done", str(account_name) + " password updated")
+    else:
+        showinfo("warning", "please, make sure to provide account name and password")
+    save_account_name_variable.set("Enter account name to save")
+    save_account_password_variable.set("Enter account password to save")
+    
+
+def get_list_of_accounts():
+    with open("saved_accounts.txt", "r") as file_saved_accounts:
+        saved_accounts = eval(file_saved_accounts.read())
+    return saved_accounts
+
+def create_dropdown_list_of_saved_accounts():
+    global login_drop_down_list_of_accounts_var
+    list_of_accounts = get_list_of_accounts()
+    login_drop_down_list_of_accounts_var = StringVar(main_window_of_gui)
+    login_drop_down_list_of_accounts_var.set(list_of_accounts[-1])
+    login_drop_down_list_of_accounts = OptionMenu(main_window_of_gui, login_drop_down_list_of_accounts_var, *list_of_accounts)
+    login_drop_down_list_of_accounts.configure(width=15)
+    login_drop_down_list_of_accounts.grid(row = 2, column = 2)
+    print(login_drop_down_list_of_accounts.winfo_exists())
+    
+
+def login_with_selected_account():
+    global login_drop_down_list_of_accounts_var
+    chosen_login = str(login_drop_down_list_of_accounts_var.get())
+    chosen_password = str(keyring.get_password("instagram", chosen_login))
+    driver.find_element_by_name("username").send_keys(chosen_login)
+    time.sleep(gathering_waiting)
+    driver.find_element_by_name("password").send_keys(chosen_password)
+    time.sleep(gathering_waiting)
+    driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[3]/button''').click()
 
 main_window_of_gui = tkinter.Tk()
 main_window_of_gui.title("Инстаграм помошник 22.10.2018")
 main_window_of_gui.wm_attributes("-topmost", 1)
 
-like_text_variable = StringVar()
-like_text_variable.set("Users liked: 0")
-gathered_users_text_variable = StringVar()
-gathered_users_text_variable.set("Users saved: 0")
+save_account_name_variable = StringVar()
+save_account_name_variable.set("Enter account name to save")
+save_account_password_variable = StringVar()
+save_account_password_variable.set("Enter account password to save")
 
+save_account_name = Entry(main_window_of_gui, width=30, textvariable = save_account_name_variable)
+save_account_name.grid(row = 0, column = 2)
+save_account_password = Entry(main_window_of_gui, width=30, textvariable = save_account_password_variable)
+save_account_password.grid(row = 1, column = 2)
+
+save_account_name_and_password_button = Button(main_window_of_gui, text = "save", width = 5, height = 1, command = add_account_name_and_password)
+save_account_name_and_password_button.grid(row = 0, column = 3)
+
+create_dropdown_list_of_saved_accounts()
+
+login_button = Button(main_window_of_gui, text = "Log in", width = 15, height = 1, command = login_with_selected_account)
+login_button.grid(row = 2, column = 3)
 
 
 ask_who_to_spy = Label(main_window_of_gui, text = "Get followers from who? : ")
@@ -289,8 +348,8 @@ gather_button.grid(row = 6, column = 0)
 like_button.grid(row = 6, column = 1)
 follow_button.grid(row = 7, column = 0)
 
-users_saved_in_a_list = Label(main_window_of_gui, textvariable = gathered_users_text_variable)
-users_saved_in_a_list.grid(row = 8, column = 0)
-users_liked = Label(main_window_of_gui, textvariable = like_text_variable)
-users_liked.grid(row = 9, column = 0)
+
+
+
+
 main_window_of_gui.mainloop()
