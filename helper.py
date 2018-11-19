@@ -266,6 +266,7 @@ def add_account_name_and_password():
         showinfo("warning", "please, make sure to provide account name and password")
     save_account_name_variable.set("Enter account name to save")
     save_account_password_variable.set("Enter account password to save")
+    create_dropdown_list_of_saved_accounts()
     
 
 def get_list_of_accounts():
@@ -275,14 +276,16 @@ def get_list_of_accounts():
 
 def create_dropdown_list_of_saved_accounts():
     global login_drop_down_list_of_accounts_var
+    global login_drop_down_list_of_accounts
     list_of_accounts = get_list_of_accounts()
     login_drop_down_list_of_accounts_var = StringVar(main_window_of_gui)
     login_drop_down_list_of_accounts_var.set(list_of_accounts[-1])
+    if login_drop_down_list_of_accounts.winfo_exists() == 1:
+        login_drop_down_list_of_accounts.destroy()
     login_drop_down_list_of_accounts = OptionMenu(main_window_of_gui, login_drop_down_list_of_accounts_var, *list_of_accounts)
     login_drop_down_list_of_accounts.configure(width=15)
     login_drop_down_list_of_accounts.grid(row = 2, column = 2)
-    print(login_drop_down_list_of_accounts.winfo_exists())
-    
+        
 
 def login_with_selected_account():
     global login_drop_down_list_of_accounts_var
@@ -310,6 +313,8 @@ save_account_password.grid(row = 1, column = 2)
 
 save_account_name_and_password_button = Button(main_window_of_gui, text = "save", width = 5, height = 1, command = add_account_name_and_password)
 save_account_name_and_password_button.grid(row = 0, column = 3)
+
+login_drop_down_list_of_accounts = Label(main_window_of_gui, text = "Place holder")
 
 create_dropdown_list_of_saved_accounts()
 
