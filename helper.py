@@ -54,10 +54,15 @@ def create_liked_users_txt():
         with open("liked_users.txt", "w") as file_liked_users:
             file_liked_users.write('["one","two"]')
 
-def create_saved_accounts_txt():
-    if not os.path.isfile('./saved_accounts.txt'):
-        with open("saved_accounts.txt", "w") as file_saved_accounts:
-            file_saved_accounts.write('["one","two"]')
+def create_saved_account_txt():
+    if not os.path.isfile('./saved_account.txt'):
+        with open("saved_account.txt", "w") as file_saved_account:
+            file_saved_account.write("Enter account name to save")
+
+def get_saved_account_txt():
+    with open("saved_account.txt", "r") as file_saved_account:
+        return file_saved_account.read()
+
 
 def get_list_of_target_accounts():
     list_of_target_accounts = []
@@ -147,9 +152,10 @@ def liking_user(user_to_like, likes_given):
     driver.get(user_to_like)
     time.sleep(browser_waiting)
     try:
-        followers_of_user = driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/header/section/ul/li[2]/a/span''')
+        driver.find_element_by_class_name('''eLAPa''')
     except:
-        followers_of_user = driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/ul/li[2]/span/span''')
+        return
+    followers_of_user = driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/header/section/ul/li[2]/a/span''')
     if len(followers_of_user.text) < 4:
         try:
             driver.find_element_by_class_name('''eLAPa''').click()
@@ -164,31 +170,24 @@ def liking_user(user_to_like, likes_given):
     return likes_given
 
 def add_account_name_and_password():
-    create_dropdown_list_of_saved_accounts()
     account_name = save_account_name_variable.get()
     account_password = save_account_password_variable.get()
-    if account_name != "Enter account name to save" and account_password != "Enter account password to save":
+    if account_name != "Enter account name to save" and account_password != "Password":
         keyring.set_password("instagram", account_name, account_password)
-        with open("saved_accounts.txt", "r") as file_saved_acounts:
-            saved_accounts = eval(file_saved_acounts.read())
-        if account_name not in saved_accounts:
-            saved_accounts.append(account_name)
-            with open("saved_accounts.txt", "w") as file_saved_acounts:
-                file_saved_acounts.write(str(saved_accounts))
-                showinfo("done", str(account_name) + " saved to the list")
-        else:
-            showinfo("done", str(account_name) + " password updated")
+        with open("saved_account.txt", "w") as file_saved_acount:
+            file_saved_acount.write(str(saved_account))
+            showinfo("Done!", str(account_name) + " and password saved")
     else:
-        showinfo("warning", "please, make sure to provide account name and password")
+        showinfo("Warning!", "please, make sure to provide account name and password")
     save_account_name_variable.set("Enter account name to save")
-    save_account_password_variable.set("Enter account password to save")
-    create_dropdown_list_of_saved_accounts()
+    save_account_password_variable.set("Password")
     
 def get_list_of_accounts():
-    with open("saved_accounts.txt", "r") as file_saved_accounts:
+    with open("saved_account.txt", "r") as file_saved_accounts:
         saved_accounts = eval(file_saved_accounts.read())
     return saved_accounts
 
+"""
 def create_dropdown_list_of_saved_accounts():
     global login_drop_down_list_of_accounts_var
     global login_drop_down_list_of_accounts
@@ -200,11 +199,10 @@ def create_dropdown_list_of_saved_accounts():
     login_drop_down_list_of_accounts = OptionMenu(main_window_of_gui, login_drop_down_list_of_accounts_var, *list_of_accounts)
     login_drop_down_list_of_accounts.configure(width=15)
     login_drop_down_list_of_accounts.grid(row = 2, column = 0)
-        
+"""     
 
 def login_with_selected_account():
-    global login_drop_down_list_of_accounts_var
-    chosen_login = str(login_drop_down_list_of_accounts_var.get())
+    chosen_login = save_account_name_variable.get()
     chosen_password = str(keyring.get_password("instagram", chosen_login))
     driver.find_element_by_name("username").send_keys(chosen_login)
     time.sleep(gathering_waiting)
@@ -220,16 +218,16 @@ def insert_text(text):
 
 
 create_liked_users_txt()
-create_saved_accounts_txt()
+create_saved_account_txt()
 
 main_window_of_gui = tkinter.Tk()
 main_window_of_gui.title("Инстаграм помошник 22.10.2018")
 main_window_of_gui.wm_attributes("-topmost", 1)
 
 save_account_name_variable = StringVar()
-save_account_name_variable.set("Enter account name to save")
+save_account_name_variable.set(get_saved_account_txt())
 save_account_password_variable = StringVar()
-save_account_password_variable.set("Enter account password to save")
+save_account_password_variable.set("Password")
 
 save_account_name = Entry(main_window_of_gui, width=30, textvariable = save_account_name_variable)
 save_account_name.grid(row = 0, column = 0)
@@ -241,7 +239,6 @@ save_account_name_and_password_button.grid(row = 0, column = 1)
 
 login_drop_down_list_of_accounts = Label(main_window_of_gui, text = "Place holder")
 
-create_dropdown_list_of_saved_accounts()
 
 login_button = Button(main_window_of_gui, text = "Log in", width = 15, height = 1, command = login_with_selected_account)
 login_button.grid(row = 2, column = 1)
