@@ -72,7 +72,6 @@ def start_web_driver():
     options.add_argument(pc_browser)
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
-    driver.get("https://www.instagram.com/accounts/login/?source=auth_switcher")
     
 
 def create_file_of_target_accounts_if_was_not_there():
@@ -235,8 +234,14 @@ def extracting_user_to_like():
 def like_gathered_users():
     def slow_magic():
         global driver
+        global LOGGED_IN
         start_web_driver()
-        login_with_selected_account()
+        while LOGGED_IN == 0:
+            try:
+                insert_text("Logging in with " + save_account_name_variable.get())
+                login_with_selected_account()
+            except:
+                insert_text("Loggin failed. Retrying.")
         likes_given = 0
         try:
             number_of_likes = int(get_number_of_likes.get())
@@ -245,7 +250,7 @@ def like_gathered_users():
             messagebox.showinfo("Attention", "Set the number of accounts to like")
             number_of_likes = 0
         while likes_given < number_of_likes:
-            for _ in range(20):    
+            for _ in range(20):
                 user_to_like = extracting_user_to_like()
                 with open("liked_users.txt", "r") as file_liked_users:
                     liked_users = []
@@ -335,21 +340,17 @@ def create_dropdown_list_of_saved_accounts():
 def login_with_selected_account():
     global LOGGED_IN
     global driver
-    if LOGGED_IN == 0:
-        chosen_login = save_account_name_variable.get()
-        chosen_password = str(keyring.get_password("instagram", chosen_login))
-        driver.find_element_by_name("username").send_keys(chosen_login)
-        time.sleep(gathering_waiting())
-        driver.find_element_by_name("password").send_keys(chosen_password)
-        time.sleep(gathering_waiting())
-        try:
-            driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
-        except:
-            time.sleep(gathering_waiting())
-            driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[4]/button''').click()
-        insert_text("Logged in with " + chosen_login)
-        time.sleep(5)
-        LOGGED_IN = 1
+    chosen_login = save_account_name_variable.get()
+    chosen_password = str(keyring.get_password("instagram", chosen_login))
+    driver.get("https://www.instagram.com/accounts/login/?source=auth_switcher")
+    driver.find_element_by_name("username").send_keys(chosen_login)
+    time.sleep(gathering_waiting())
+    driver.find_element_by_name("password").send_keys(chosen_password)
+    time.sleep(gathering_waiting())
+    driver.find_element_by_xpath('''//*[contains(text(), "Log In")]''').click()
+    insert_text("Logged in with " + chosen_login)
+    time.sleep(3)
+    LOGGED_IN = 1
 
 
 def insert_text(text):
@@ -360,7 +361,7 @@ def insert_text(text):
 create_liked_users_txt()
 create_saved_account_txt()
 create_seeder_accounts_txt()
-
+create_file_of_target_accounts_if_was_not_there()
 
 main_window_of_gui = tkinter.Tk()
 main_window_of_gui.title("Инстаграм помошник 22.01.2019")
