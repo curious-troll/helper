@@ -48,8 +48,10 @@ def gathering_waiting():
 def like_waiting():
     return random.randint(10, 30)
 
+
 def rest_waiting():
     return random.randint(3600, 4200)
+    insert_text("Taking a break between liking.")
 
 
 def space_hiting():
@@ -120,37 +122,12 @@ def save_seeder_account():
     executing = Thread(target=slow_magic)
     executing.start()
 
-"""
-def get_list_of_target_accounts():
-    list_of_target_accounts = []
-    file_names = []
-    for ___, ____, files in os.walk(current_directory):
-        for filename in files:
-            if "_followers.txt" in filename:
-                file_names.append(filename)
-    for file_object in file_names:
-        if os.path.getsize(file_object) > 2:
-           list_of_target_accounts.append(file_object)
-    return list_of_target_accounts
-"""
-
-
-def get_list_of_target_accounts():
-    with open("target_accounts.txt", "r") as target_accounts_file:
-        list_of_target_accounts = []
-        for line in target_accounts_file:
-            list_of_target_accounts.append(line.strip())
-    return list_of_target_accounts
-
-
 def save_list_of_target_accounts(existing_list_of_target_accounts, new_list_of_target_accounts):
     list_of_target_accounts = existing_list_of_target_accounts
     for target_account in new_list_of_target_accounts:
         if target_account not in list_of_target_accounts:
             list_of_target_accounts.append(target_account)
-    with open("target_accounts.txt", "w") as target_accounts_file:
-        for target_account in list_of_target_accounts:
-            target_accounts_file.write(target_account + "\n")
+
 
 
 def gather_users():
@@ -192,8 +169,9 @@ def gather_users():
         if starting_length == ending_length:
             break
         time.sleep(gathering_waiting())
-    existing_list_of_target_accounts = get_list_of_target_accounts()
-    save_list_of_target_accounts(existing_list_of_target_accounts, list_of_users_to_save)
+    with open("target_accounts.txt", "w") as target_accounts_file:
+        for target_account in list_of_users_to_save:
+            target_accounts_file.write(target_account + "\n")
     insert_text("Extracting done!")
 
 
@@ -212,12 +190,13 @@ def get_seeder_account():
             seeder_accounts_file.write(seeder_account + "\n")
     return seeder_account
 
+
 def extracting_user_to_like():
     users_to_like = []
     with open("target_accounts.txt", "r") as file_gathered_users:
         for line in file_gathered_users:
             users_to_like.append(line.strip("\n"))
-    try:    
+    try:
         user_to_like = users_to_like.pop(0)
     except:
         insert_text("No users left in the list. Extracting some.")
@@ -228,6 +207,7 @@ def extracting_user_to_like():
     if user_to_like == "":
         gather_users()
         user_to_like = extracting_user_to_like()
+        insert_text("User after extraction: " + user_to_like)
     return user_to_like
 
 
