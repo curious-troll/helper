@@ -238,6 +238,7 @@ def like_gathered_users():
                             file_liked_users.write(liked_user + "\n")
             insert_text("Je prends une pause entre des series de like. Il est " + get_timestamp)
             rest_waiting()
+        messagebox.showinfo("Voila !", str(likes_given) + "Likes distribue. Il est " + get_timestamp)
     executing = Thread(target=slow_magic)
     executing.start()
 
@@ -277,9 +278,9 @@ def add_account_name_and_password():
         keyring.set_password("instagram", account_name, account_password)
         with open("saved_account.txt", "w") as file_saved_acount:
             file_saved_acount.write(str(account_name))
-            showinfo("Super !", str(account_name) + " et mot de pass enregistres !")
+            messagebox.showinfo("Super !", str(account_name) + " et mot de pass enregistres !")
     else:
-        showinfo("Attention !", "Il faut tapper ton mot de pass")
+        messagebox.showinfo("Attention !", "Il faut tapper ton mot de pass")
     save_account_name_variable.set("Ton adress e-mail.")
     save_account_password_variable.set("Password")
 
