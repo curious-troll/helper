@@ -1,22 +1,14 @@
-import simplejson
-import urllib
 import keyring
 from keyrings.alt import Windows
-
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import time
 import sys
 import random
-import tkinter
-from tkinter import Label, Button, Entry, Checkbutton, OptionMenu
+from tkinter import Tk
+from tkinter import Label, Button, Entry, Checkbutton
 from tkinter import StringVar, IntVar
 from tkinter import Listbox
 from tkinter import Scrollbar
@@ -24,7 +16,6 @@ from tkinter import messagebox
 from tkinter import N, S, E, W, END
 from tkinter import VERTICAL
 from threading import Thread
-from tkinter.messagebox import showinfo
 
 '''Below module allows us to interact with Windows files.'''
 import os
@@ -343,7 +334,7 @@ create_saved_account_txt()
 create_seeder_accounts_txt()
 create_file_of_target_accounts_if_was_not_there()
 
-main_window_of_gui = tkinter.Tk()
+main_window_of_gui = Tk()
 main_window_of_gui.title("Инстаграм помошник 22.01.2019")
 main_window_of_gui.wm_attributes("-topmost", 1)
 
