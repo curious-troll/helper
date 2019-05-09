@@ -281,7 +281,6 @@ def add_account_name_and_password():
             messagebox.showinfo("Super !", str(account_name) + " et mot de pass enregistres !")
     else:
         messagebox.showinfo("Attention !", "Il faut tapper ton mot de pass")
-    save_account_name_variable.set("Ton adress e-mail.")
     save_account_password_variable.set("Password")
 
 
@@ -307,12 +306,18 @@ def login_with_selected_account():
         try:
             driver.find_element_by_xpath('''//*[contains(text(), "Connexion")]''').click()
         except ValueError as error:
+            time.sleep(1)
             print(error)
             try:
                 driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[4]/button/div''').click()
             except ValueError as error:
+                time.sleep(1)
                 print(error)
-                driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
+                try:
+                    driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
+                except ValueError as error:
+                    time.sleep(1)
+                    driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[6]/button/div''').click()
     insert_text("Connecte avec " + chosen_login)
     time.sleep(3)
     LOGGED_IN = 1
