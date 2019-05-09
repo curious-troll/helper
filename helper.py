@@ -60,6 +60,7 @@ NEED_TO_STOP = 0
 driver = ""
 
 
+
 def start_web_driver():
     global driver
     options = webdriver.ChromeOptions()
@@ -67,6 +68,7 @@ def start_web_driver():
         options.add_argument('headless')
     pc_browser = "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
     options.add_argument(pc_browser)
+    options.add_experimental_option('prefs', {'intl.accept_languages': "fr-fr"})
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
 
@@ -263,9 +265,8 @@ def liking_user(user_to_like, likes_given):
                 driver.find_element_by_xpath('''/html/body/div[3]/div[2]/div/article/div[2]/section[1]/span[1]/button/span''').click()
                 likes_given += 1
                 insert_text(user_to_like + " liked (" + str(likes_given) + ")")
-            except ValueError as error:
+            except:
                 insert_text("Pas reussi a donner un like a " + user_to_like)
-                insert_text("Raison : " + error)
         else:
             insert_text(user_to_like + " compte Pro. Je passe.")
     return likes_given
@@ -300,24 +301,7 @@ def login_with_selected_account():
     time.sleep(gathering_waiting())
     driver.find_element_by_name("password").send_keys(chosen_password)
     time.sleep(gathering_waiting())
-    try:
-        driver.find_element_by_xpath('''//*[contains(text(), "Log In")]''').click()
-    except ValueError as error:
-        try:
-            driver.find_element_by_xpath('''//*[contains(text(), "Connexion")]''').click()
-        except ValueError as error:
-            time.sleep(1)
-            print(error)
-            try:
-                driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[4]/button/div''').click()
-            except ValueError as error:
-                time.sleep(1)
-                print(error)
-                try:
-                    driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
-                except ValueError as error:
-                    time.sleep(1)
-                    driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[6]/button/div''').click()
+    driver.find_element_by_css_selector('''#react-root > section > main > div > article > div > div:nth-child(1) > div > form > div.Igw0E.IwRSH.eGOV_._4EzTm.bkEs3.CovQj.jKUp7.DhRcB > button > div''') .click()
     insert_text("Connecte avec " + chosen_login)
     time.sleep(3)
     LOGGED_IN = 1
