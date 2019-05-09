@@ -194,7 +194,7 @@ def extracting_user_to_like():
     try:
         user_to_like = users_to_like.pop(0)
     except:
-        insert_text("Pas de compte cible dans la liste. J'essay d'en recupere. Il est " + get_timestamp)
+        insert_text("Pas de compte cible dans la liste. J'essay d'en recupere. Il est " + get_timestamp())
         user_to_like = ""
     with open("target_accounts.txt", "w") as target_accounts_file:
         for target_account in users_to_like:
@@ -236,9 +236,9 @@ def like_gathered_users():
                     with open("liked_users.txt", "w") as file_liked_users:
                         for liked_user in liked_users:
                             file_liked_users.write(liked_user + "\n")
-            insert_text("Je prends une pause entre des series de like. Il est " + get_timestamp)
+            insert_text("Je prends une pause entre des series de like. Il est " + get_timestamp())
             rest_waiting()
-        messagebox.showinfo("Voila !", str(likes_given) + "Likes distribue. Il est " + get_timestamp)
+        messagebox.showinfo("Voila !", str(likes_given) + "Likes distribue. Il est " + get_timestamp())
     executing = Thread(target=slow_magic)
     executing.start()
 
