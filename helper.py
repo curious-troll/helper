@@ -304,8 +304,12 @@ def login_with_selected_account():
     try:
         driver.find_element_by_xpath('''//*[contains(text(), "Log In")]''').click()
     except ValueError as error:
-        print(error)
-        driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
+        try:
+            print(error)
+            driver.find_element_by_xpath('''//*[contains(text(), "Connexion")]''').click()
+        except ValueError as error:
+            print(error)
+            driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
     insert_text("Connecte avec " + chosen_login)
     time.sleep(3)
     LOGGED_IN = 1
