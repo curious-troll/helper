@@ -130,10 +130,10 @@ def save_list_of_target_accounts(existing_list_of_target_accounts, new_list_of_t
 def gather_users():
     create_file_of_target_accounts_if_was_not_there()
     list_of_users_to_save = []
-    account_to_inspect = str(get_seeder_account())
+    account_to_inspect = get_seeder_account("seeder_accounts.txt")
     insert_text("Extracting users from " + account_to_inspect)
     time.sleep(gathering_waiting())
-    driver.get("https://www.instagram.com/" + account_to_inspect + "/")
+    driver.get(account_to_inspect)
     time.sleep(gathering_waiting())
     driver.find_element_by_css_selector("""#react-root > section > main > div > header > section > ul > li:nth-child(2) > a""").click()
     time.sleep(gathering_waiting())
@@ -172,7 +172,7 @@ def gather_users():
     insert_text(str(ending_length) + "comptes-cibles recupere a " + get_timestamp())
 
 
-def get_seeder_account():
+def get_seeder_account(list_of_accounts):
     seeder_list = []
     with open("seeder_accounts.txt", "r") as file_gathered_seeders:
         for line in file_gathered_seeders:
@@ -180,15 +180,19 @@ def get_seeder_account():
     try:
         seeder_account = seeder_list.pop(0)
     except:
-        messagebox.showinfo("Attention", "No seeder left in the list")
-        seeder_account = ""
+        insert_text("Pas de compte-source dans la liste. Je prends les comptes like comme compte-source. ")
+        seeder_account = get_seeder_account("liked_users.txt")
     with open("seeder_accounts.txt", "w") as seeder_accounts_file:
         for seeder_account in seeder_list:
             seeder_accounts_file.write(seeder_account + "\n")
+    if "https://www.instagram.com/" not in seeder_account:
+        seeder_account = "https://www.instagram.com/" + seeder_account + "/"
     return seeder_account
 
 
 def extracting_user_to_like():
+    global driver
+
     users_to_like = []
     with open("target_accounts.txt", "r") as file_gathered_users:
         for line in file_gathered_users:
@@ -196,13 +200,20 @@ def extracting_user_to_like():
     try:
         user_to_like = users_to_like.pop(0)
     except:
-        insert_text("Pas de compte cible dans la liste. J'essay d'en recupere. Il est " + get_timestamp)
+        insert_text("Pas de compte cible dans la liste. J'essay d'en recupere. Il est " + get_timestamp())
         user_to_like = ""
     with open("target_accounts.txt", "w") as target_accounts_file:
         for target_account in users_to_like:
             target_accounts_file.write(target_account + "\n")
     if user_to_like == "":
         gather_users()
+        user_to_like = extracting_user_to_like()
+    driver.get(user_to_like)
+    time.sleep(browser_waiting())
+    try:
+        driver.find_element_by_class_name('''eLAPa''')
+    except:
+        insert_text(user_to_like + " n'a pas de photo a liker.")
         user_to_like = extracting_user_to_like()
     return user_to_like
 
@@ -226,7 +237,8 @@ def like_gathered_users():
             messagebox.showinfo("Attention!", "Il faut preciser le nombre de like a distribuer.")
             number_of_likes = 0
         while likes_given < number_of_likes:
-            for _ in range(20):
+            current_like_streak = 0
+            while current_like_streak < 19:
                 user_to_like = extracting_user_to_like()
                 with open("liked_users.txt", "r") as file_liked_users:
                     liked_users = []
@@ -238,9 +250,10 @@ def like_gathered_users():
                     with open("liked_users.txt", "w") as file_liked_users:
                         for liked_user in liked_users:
                             file_liked_users.write(liked_user + "\n")
-            insert_text("Je prends une pause entre des series de like. Il est " + get_timestamp)
+                current_like_streak = likes_given % 20
+            insert_text("Je prends une pause entre des series de like. Il est " + get_timestamp())
             rest_waiting()
-        messagebox.showinfo("Voila !", str(likes_given) + "Likes distribue. Il est " + get_timestamp)
+        messagebox.showinfo("Voila !", str(likes_given) + "Likes distribue. Il est " + get_timestamp())
     executing = Thread(target=slow_magic)
     executing.start()
 
@@ -248,28 +261,19 @@ def like_gathered_users():
 def liking_user(user_to_like, likes_given):
     global NEED_TO_STOP
     global driver
-    driver.get(user_to_like)
-    time.sleep(browser_waiting())
-    move_to_next_user = 0
-    try:
-        driver.find_element_by_class_name('''eLAPa''')
-    except:
-        move_to_next_user = 1
-        insert_text(user_to_like + " n'a pas de photo a liker.")
-    if move_to_next_user == 0:
-        followers_of_user = driver.find_element_by_css_selector('''#react-root > section > main > div > header > section > ul > li:nth-child(2) > a > span''')
-        if len(followers_of_user.text) < 4:
-            try:
-                driver.find_element_by_css_selector('''#react-root > section > main > div > div._2z6nI > article > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > a > div.eLAPa''').click()
-                time.sleep(like_waiting())
-                driver.find_element_by_css('''body > div._2dDPU.vCf6V > div.zZYga > div > article > div.eo2As > section.ltpMr.Slqrh > span.fr66n > button > span''').click()
-                likes_given += 1
-                insert_text(user_to_like + " liked (" + str(likes_given) + ")")
-            except ValueError as error:
-                insert_text("Pas reussi a donner un like a " + user_to_like)
-                insert_text("Raison : " + error)
-        else:
-            insert_text(user_to_like + " compte Pro. Je passe.")
+    followers_of_user = driver.find_element_by_css_selector('''#react-root > section > main > div > header > section > ul > li:nth-child(2) > a > span''')
+    if len(followers_of_user.text) < 4:
+        try:
+            driver.find_element_by_css_selector('''#react-root > section > main > div > div._2z6nI > article > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > a > div.eLAPa''').click()
+            time.sleep(like_waiting())
+            driver.find_element_by_css_selector('''body > div._2dDPU.vCf6V > div.zZYga > div > article > div.eo2As > section.ltpMr.Slqrh > span.fr66n > button > span''').click()
+            likes_given += 1
+            insert_text(user_to_like + " liked (" + str(likes_given) + ")")
+        except ValueError as error:
+            insert_text("Pas reussi a donner un like a " + user_to_like)
+            insert_text("Raison : " + error)
+    else:
+        insert_text(user_to_like + " compte Pro. Je passe.")
     return likes_given
 
 
@@ -304,7 +308,7 @@ def login_with_selected_account():
     driver.find_element_by_name("password").send_keys(chosen_password)
     time.sleep(gathering_waiting())
     try:
-        driver.find_element_by_xpath('''//*[contains(text(), "Log In")]''').click()
+        driver.find_element_by_css_selector('''#react-root > section > main > div > article > div > div:nth-child(1) > div > form > div:nth-child(4) > button > div''').click()
     except ValueError as error:
         print(error)
         driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
