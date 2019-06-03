@@ -60,7 +60,6 @@ NEED_TO_STOP = 0
 driver = ""
 
 
-
 def start_web_driver():
     global driver
     options = webdriver.ChromeOptions()
@@ -104,6 +103,7 @@ def get_saved_account_txt():
 
 def save_seeder_account():
     global driver
+
     def slow_magic():
         seeder_list = []
         with open("seeder_accounts.txt", "r") as file_gathered_seeders:
@@ -135,7 +135,7 @@ def gather_users():
     time.sleep(gathering_waiting())
     driver.get("https://www.instagram.com/" + account_to_inspect + "/")
     time.sleep(gathering_waiting())
-    driver.find_element_by_xpath("""//*[@id="react-root"]/section/main/div/header/section/ul/li[2]/a/span""").click()
+    driver.find_element_by_css_selector("""#react-root > section > main > div > header > section > ul > li:nth-child(2) > a""").click()
     time.sleep(gathering_waiting())
     index_of_try = 0
     actions = ActionChains(driver)
@@ -177,7 +177,7 @@ def get_seeder_account():
     with open("seeder_accounts.txt", "r") as file_gathered_seeders:
         for line in file_gathered_seeders:
             seeder_list.append(line.strip("\n"))
-    try:    
+    try:
         seeder_account = seeder_list.pop(0)
     except:
         messagebox.showinfo("Attention", "No seeder left in the list")
@@ -196,7 +196,7 @@ def extracting_user_to_like():
     try:
         user_to_like = users_to_like.pop(0)
     except:
-        insert_text("Pas de compte cible dans la liste. J'essay d'en recupere. Il est " + get_timestamp())
+        insert_text("Pas de compte cible dans la liste. J'essay d'en recupere. Il est " + get_timestamp)
         user_to_like = ""
     with open("target_accounts.txt", "w") as target_accounts_file:
         for target_account in users_to_like:
@@ -238,9 +238,9 @@ def like_gathered_users():
                     with open("liked_users.txt", "w") as file_liked_users:
                         for liked_user in liked_users:
                             file_liked_users.write(liked_user + "\n")
-            insert_text("Je prends une pause entre des series de like. Il est " + get_timestamp())
+            insert_text("Je prends une pause entre des series de like. Il est " + get_timestamp)
             rest_waiting()
-        messagebox.showinfo("Voila !", str(likes_given) + "Likes distribue. Il est " + get_timestamp())
+        messagebox.showinfo("Voila !", str(likes_given) + "Likes distribue. Il est " + get_timestamp)
     executing = Thread(target=slow_magic)
     executing.start()
 
@@ -257,16 +257,17 @@ def liking_user(user_to_like, likes_given):
         move_to_next_user = 1
         insert_text(user_to_like + " n'a pas de photo a liker.")
     if move_to_next_user == 0:
-        followers_of_user = driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/header/section/ul/li[2]/a/span''')
+        followers_of_user = driver.find_element_by_css_selector('''#react-root > section > main > div > header > section > ul > li:nth-child(2) > a > span''')
         if len(followers_of_user.text) < 4:
             try:
-                driver.find_element_by_class_name('''eLAPa''').click()
+                driver.find_element_by_css_selector('''#react-root > section > main > div > div._2z6nI > article > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > a > div.eLAPa''').click()
                 time.sleep(like_waiting())
-                driver.find_element_by_xpath('''/html/body/div[3]/div[2]/div/article/div[2]/section[1]/span[1]/button/span''').click()
+                driver.find_element_by_css('''body > div._2dDPU.vCf6V > div.zZYga > div > article > div.eo2As > section.ltpMr.Slqrh > span.fr66n > button > span''').click()
                 likes_given += 1
                 insert_text(user_to_like + " liked (" + str(likes_given) + ")")
-            except:
+            except ValueError as error:
                 insert_text("Pas reussi a donner un like a " + user_to_like)
+                insert_text("Raison : " + error)
         else:
             insert_text(user_to_like + " compte Pro. Je passe.")
     return likes_given
@@ -282,6 +283,7 @@ def add_account_name_and_password():
             messagebox.showinfo("Super !", str(account_name) + " et mot de pass enregistres !")
     else:
         messagebox.showinfo("Attention !", "Il faut tapper ton mot de pass")
+    save_account_name_variable.set("Ton adress e-mail.")
     save_account_password_variable.set("Password")
 
 
@@ -301,7 +303,11 @@ def login_with_selected_account():
     time.sleep(gathering_waiting())
     driver.find_element_by_name("password").send_keys(chosen_password)
     time.sleep(gathering_waiting())
-    driver.find_element_by_css_selector('''#react-root > section > main > div > article > div > div:nth-child(1) > div > form > div.Igw0E.IwRSH.eGOV_._4EzTm.bkEs3.CovQj.jKUp7.DhRcB > button > div''') .click()
+    try:
+        driver.find_element_by_xpath('''//*[contains(text(), "Log In")]''').click()
+    except ValueError as error:
+        print(error)
+        driver.find_element_by_xpath('''//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[5]/button/div''').click()
     insert_text("Connecte avec " + chosen_login)
     time.sleep(3)
     LOGGED_IN = 1
