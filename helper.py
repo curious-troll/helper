@@ -141,7 +141,14 @@ def gather_users():
     actions = ActionChains(driver)
     while index_of_try < 20:
         starting_length = len(list_of_users_to_save)
-        driver.find_element_by_xpath("""/html/body/div[3]/div/div[2]/ul""").click()
+        try:
+            driver.find_element_by_xpath("""/html/body/div[3]/div/div[2]/ul""").click()
+        except:
+            try:
+                driver.find_element_by_id("""isgrP""").click()
+            except:
+                gather_users()
+                return
         actions.send_keys(Keys.PAGE_DOWN).perform()
         time.sleep(space_hiting())
         actions.send_keys(Keys.PAGE_DOWN).perform()
