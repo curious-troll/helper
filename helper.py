@@ -174,7 +174,7 @@ def gather_users():
 
 def get_seeder_account(list_of_accounts):
     seeder_list = []
-    with open("seeder_accounts.txt", "r") as file_gathered_seeders:
+    with open(list_of_accounts, "r") as file_gathered_seeders:
         for line in file_gathered_seeders:
             seeder_list.append(line.strip("\n"))
     try:
